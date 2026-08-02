@@ -62,4 +62,3 @@ Aryan Singh — B.Tech CSE, UTU Dehradun | Team AetherX
 - [ ] Record a short demo video for each task
 - [ ] Post video on LinkedIn, tag @CODSOFT, use #codsoft #internship #artificialintelligence
 - [ ] Submit GitHub repo link via the task submission form (shared by email)
-- [ ] 
