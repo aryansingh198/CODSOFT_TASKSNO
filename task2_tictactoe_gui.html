@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Unbeatable Tic-Tac-Toe | CODSOFT Task 2</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#0b1120;
+    --surface:#111a2c;
+    --line:#22304a;
+    --text:#e2e8f0;
+    --muted:#64748b;
+    --human:#5eead4;
+    --ai:#f97362;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    min-height:100vh;
+    display:flex; align-items:center; justify-content:center;
+    background:
+      radial-gradient(circle at 85% 0%, #2a1420 0%, transparent 45%),
+      var(--bg);
+    color:var(--text);
+    font-family:'JetBrains Mono', monospace;
+    padding:32px 16px;
+  }
+  .wrap{ width:100%; max-width:420px; text-align:center; }
+  .eyebrow{ color:var(--ai); font-size:12px; letter-spacing:.14em; text-transform:uppercase; margin-bottom:6px;}
+  h1{ font-family:'Space Grotesk',sans-serif; font-size:28px; margin:0 0 4px 0; }
+  .sub{ color:var(--muted); font-size:13px; margin-bottom:22px; }
+  .status{
+    font-family:'Space Grotesk',sans-serif;
+    font-size:15px;
+    font-weight:700;
+    margin-bottom:16px;
+    min-height:22px;
+  }
+  .status.human{ color:var(--human); }
+  .status.ai{ color:var(--ai); }
+  .status.draw{ color:var(--muted); }
+  .board{
+    display:grid;
+    grid-template-columns:repeat(3, 1fr);
+    gap:8px;
+    background:var(--line);
+    padding:8px;
+    border-radius:14px;
+    box-shadow:0 30px 60px -30px rgba(0,0,0,.6);
+  }
+  .cell{
+    aspect-ratio:1;
+    background:var(--surface);
+    border:none;
+    border-radius:8px;
+    font-family:'Space Grotesk',sans-serif;
+    font-size:44px;
+    font-weight:700;
+    cursor:pointer;
+    color:var(--text);
+    display:flex; align-items:center; justify-content:center;
+    transition:background .15s;
+  }
+  .cell:hover:not(:disabled){ background:#182338; }
+  .cell:disabled{ cursor:default; }
+  .cell.X{ color:var(--human); }
+  .cell.O{ color:var(--ai); }
+  .score{
+    display:flex; justify-content:center; gap:22px;
+    margin-top:20px; font-size:12px; color:var(--muted);
+  }
+  .score b{ color:var(--text); font-family:'Space Grotesk',sans-serif; font-size:16px; display:block;}
+  button.reset{
+    margin-top:20px;
+    background:none;
+    border:1px solid var(--line);
+    color:var(--text);
+    font-family:'Space Grotesk',sans-serif;
+    font-weight:700;
+    padding:10px 20px;
+    border-radius:8px;
+    cursor:pointer;
+    font-size:13px;
+  }
+  button.reset:hover{ border-color:var(--human); color:var(--human); }
+  footer{ text-align:center; color:var(--muted); font-size:11px; margin-top:24px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="eyebrow">CODSOFT · Artificial Intelligence Internship · Task 02</div>
+  <h1>Unbeatable Tic-Tac-Toe</h1>
+  <div class="sub">Minimax + Alpha-Beta Pruning · You are X, AI is O</div>
+
+  <div class="status" id="status">Your move</div>
+
+  <div class="board" id="board"></div>
+
+  <div class="score">
+    <div><b id="sWin">0</b>You</div>
+    <div><b id="sDraw">0</b>Draws</div>
+    <div><b id="sLose">0</b>AI</div>
+  </div>
+
+  <button class="reset" id="reset">New Game</button>
+  <footer>Built for CODSOFT_TASKSNO · Aryan Singh</footer>
+</div>
+
+<script>
+// ---------------------------------------------------------------
+// Minimax with Alpha-Beta Pruning — mirrors task2_tictactoe.py
+// ---------------------------------------------------------------
+const HUMAN = 'X', AI = 'O', EMPTY = null;
+let board = Array(9).fill(EMPTY);
+let gameOver = false;
+let scores = { win:0, draw:0, lose:0 };
+
+const WIN_COMBOS = [[0,1,2],[3,4,5],[6,7,8],[0,3,6],[1,4,7],[2,5,8],[0,4,8],[2,4,6]];
+
+function checkWinner(b){
+  for(const [a,c,d] of WIN_COMBOS){
+    if(b[a] && b[a]===b[c] && b[a]===b[d]) return b[a];
+  }
+  return b.every(c => c) ? 'DRAW' : null;
+}
+
+function minimax(b, depth, isMax, alpha, beta){
+  const winner = checkWinner(b);
+  if(winner === AI) return 10 - depth;
+  if(winner === HUMAN) return depth - 10;
+  if(winner === 'DRAW') return 0;
+
+  if(isMax){
+    let best = -Infinity;
+    for(let i=0;i<9;i++){
+      if(!b[i]){
+        b[i] = AI;
+        best = Math.max(best, minimax(b, depth+1, false, alpha, beta));
+        b[i] = EMPTY;
+        alpha = Math.max(alpha, best);
+        if(beta <= alpha) break;
+      }
+    }
+    return best;
+  } else {
+    let best = Infinity;
+    for(let i=0;i<9;i++){
+      if(!b[i]){
+        b[i] = HUMAN;
+        best = Math.min(best, minimax(b, depth+1, true, alpha, beta));
+        b[i] = EMPTY;
+        beta = Math.min(beta, best);
+        if(beta <= alpha) break;
+      }
+    }
+    return best;
+  }
+}
+
+function bestAiMove(b){
+  let bestScore = -Infinity, move = null;
+  for(let i=0;i<9;i++){
+    if(!b[i]){
+      b[i] = AI;
+      const score = minimax(b, 0, false, -Infinity, Infinity);
+      b[i] = EMPTY;
+      if(score > bestScore){ bestScore = score; move = i; }
+    }
+  }
+  return move;
+}
+
+const boardEl = document.getElementById('board');
+const statusEl = document.getElementById('status');
+
+function render(){
+  boardEl.innerHTML = '';
+  board.forEach((val, i) => {
+    const btn = document.createElement('button');
+    btn.className = 'cell' + (val ? ' ' + val : '');
+    btn.textContent = val || '';
+    btn.disabled = !!val || gameOver;
+    btn.addEventListener('click', () => humanMove(i));
+    boardEl.appendChild(btn);
+  });
+}
+
+function setStatus(text, cls){
+  statusEl.textContent = text;
+  statusEl.className = 'status' + (cls ? ' ' + cls : '');
+}
+
+function endGame(winner){
+  gameOver = true;
+  if(winner === HUMAN){ scores.win++; setStatus('You win! 🎉', 'human'); }
+  else if(winner === AI){ scores.lose++; setStatus('AI wins.', 'ai'); }
+  else { scores.draw++; setStatus("It's a draw.", 'draw'); }
+  document.getElementById('sWin').textContent = scores.win;
+  document.getElementById('sDraw').textContent = scores.draw;
+  document.getElementById('sLose').textContent = scores.lose;
+}
+
+function humanMove(i){
+  if(gameOver || board[i]) return;
+  board[i] = HUMAN;
+  render();
+  const winner = checkWinner(board);
+  if(winner){ endGame(winner); return; }
+
+  setStatus('AI thinking…', 'ai');
+  setTimeout(() => {
+    const move = bestAiMove(board);
+    board[move] = AI;
+    render();
+    const w2 = checkWinner(board);
+    if(w2){ endGame(w2); }
+    else { setStatus('Your move'); }
+  }, 300);
+}
+
+document.getElementById('reset').addEventListener('click', () => {
+  board = Array(9).fill(EMPTY);
+  gameOver = false;
+  setStatus('Your move');
+  render();
+});
+
+render();
+</script>
+</body>
+</html>
